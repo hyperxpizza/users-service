@@ -1,6 +1,10 @@
 drop table if exists users;
 drop table if exists logins;
 
+create table users (
+    id serial primary key,
+);
+
 create table logins (
     id serial primary key,
     username varchar(100) unique not null,
@@ -8,11 +12,11 @@ create table logins (
     passwordHash text not null,
     passwordSalt text not null,
     created timestamp not null,
-    updated timestamp not null
+    updated timestamp not null,
+    constraint userid
+        foreign key(id)
+            references users(id)
+                on delete cascade
 );
 
-create table users (
-    id serial primary key,
-    loginID int references logins(id) not null,
-);
 
