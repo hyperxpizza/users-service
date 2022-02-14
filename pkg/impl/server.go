@@ -15,7 +15,21 @@ type UsersServiceServer struct {
 }
 
 func NewUsersServiceServer(cfgPath string) (*UsersServiceServer, error) {
-	return &UsersServiceServer{}, nil
+
+	cfg, err := config.NewConfig(cfgPath)
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := database.Connect(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return &UsersServiceServer{
+		cfg: cfg,
+		db:  db,
+	}, nil
 }
 
 func (s *UsersServiceServer) Run() {

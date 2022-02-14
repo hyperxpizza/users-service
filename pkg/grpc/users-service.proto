@@ -14,10 +14,9 @@ message LoginData {
     string username = 2;
     string email = 3;
     string passwordHash = 4;
-    string passwordSlat = 5;
-    google.protobuf.Timestamp created = 6;
-    google.protobuf.Timestamp updated = 7;
-    int64 userID = 8;
+    google.protobuf.Timestamp created = 5;
+    google.protobuf.Timestamp updated = 6;
+    int64 userID = 7;
 }
 
 service UsersService {

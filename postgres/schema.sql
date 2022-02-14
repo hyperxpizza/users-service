@@ -2,7 +2,7 @@ drop table if exists users;
 drop table if exists logins;
 
 create table users (
-    id serial primary key,
+    id serial primary key
 );
 
 create table logins (
@@ -10,7 +10,6 @@ create table logins (
     username varchar(100) unique not null,
     email varchar(254) unique not null,
     passwordHash text not null,
-    passwordSalt text not null,
     created timestamp not null,
     updated timestamp not null,
     constraint userid
