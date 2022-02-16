@@ -2,19 +2,27 @@ package impl
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
 	"github.com/hyperxpizza/users-service/pkg/config"
 	"github.com/hyperxpizza/users-service/pkg/database"
 	pb "github.com/hyperxpizza/users-service/pkg/grpc"
+	"github.com/hyperxpizza/users-service/pkg/utils"
+	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type UsersServiceServer struct {
-	cfg *config.Config
-	db  *database.Database
+	cfg    *config.Config
+	db     *database.Database
+	logger logrus.FieldLogger
 	pb.UnimplementedUsersServiceServer
 }
 
-func NewUsersServiceServer(cfgPath string) (*UsersServiceServer, error) {
+func NewUsersServiceServer(cfgPath string, logger logrus.FieldLogger) (*UsersServiceServer, error) {
 
 	cfg, err := config.NewConfig(cfgPath)
 	if err != nil {
@@ -27,17 +35,42 @@ func NewUsersServiceServer(cfgPath string) (*UsersServiceServer, error) {
 	}
 
 	return &UsersServiceServer{
-		cfg: cfg,
-		db:  db,
+		cfg:    cfg,
+		db:     db,
+		logger: logger,
 	}, nil
 }
 
 func (s *UsersServiceServer) Run() {
-
+	grpcServer := grpc.NewServer()
+	pb.RegisterUsersServiceServer(grpcServer, s)
 }
 
 func (s *UsersServiceServer) GetLoginData(ctx context.Context, req *pb.LoginRequest) (*pb.LoginData, error) {
-	var loginData pb.LoginData
 
-	return &loginData, nil
+	s.logger.Infof("getting login data for: %s", req.Username)
+
+	loginData, err := s.db.GetLoginData(req.Username)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			s.logger.Infof("user with username: %s was not found in the database", req.Username)
+			return nil, status.Error(
+				codes.NotFound,
+				err.Error(),
+			)
+		} else {
+			s.logger.Infof("getting data for: %s failed: %s", req.Username, err.Error())
+			return nil, status.Error(
+				codes.Internal,
+				err.Error(),
+			)
+		}
+	}
+
+	err = utils.CompareHashAndPassword(loginData.PasswordHash, req.Password)
+	if err != nil {
+
+	}
+
+	return loginData, nil
 }

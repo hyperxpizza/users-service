@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/golang/protobuf v1.5.2
 	github.com/lib/pq v1.10.4
+	github.com/sirupsen/logrus v1.8.1
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	google.golang.org/grpc v1.44.0
 	google.golang.org/protobuf v1.27.1
