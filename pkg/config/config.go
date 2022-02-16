@@ -15,6 +15,10 @@ type Config struct {
 		Name     string `json:"name"`
 		Host     string `json:"host"`
 	} `json:"database"`
+	UsersService struct {
+		Port int    `json:"port"`
+		Host string `json:"host"`
+	} `json:"usersService"`
 }
 
 func NewConfig(pathToFile string) (*Config, error) {

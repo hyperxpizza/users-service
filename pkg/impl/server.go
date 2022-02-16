@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"net"
 
 	"github.com/hyperxpizza/users-service/pkg/config"
 	"github.com/hyperxpizza/users-service/pkg/database"
@@ -44,6 +46,17 @@ func NewUsersServiceServer(cfgPath string, logger logrus.FieldLogger) (*UsersSer
 func (s *UsersServiceServer) Run() {
 	grpcServer := grpc.NewServer()
 	pb.RegisterUsersServiceServer(grpcServer, s)
+	addr := fmt.Sprintf(":%d", s.cfg.UsersService.Port)
+	lis, err := net.Listen("tcp", addr)
+	if err != nil {
+		s.logger.Fatalf("net.Listen failed: %s", err.Error())
+	}
+
+	s.logger.Infof("users service server running on %s:%d", s.cfg.UsersService.Host, s.cfg.UsersService.Host)
+
+	if err := grpcServer.Serve(lis); err != nil {
+		s.logger.Fatalf("failed to serve: %s", err.Error())
+	}
 }
 
 func (s *UsersServiceServer) GetLoginData(ctx context.Context, req *pb.LoginRequest) (*pb.LoginData, error) {
