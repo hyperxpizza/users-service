@@ -82,7 +82,11 @@ func (s *UsersServiceServer) GetLoginData(ctx context.Context, req *pb.LoginRequ
 
 	err = utils.CompareHashAndPassword(loginData.PasswordHash, req.Password)
 	if err != nil {
-
+		s.logger.Infof("password of user: %s is not matching", req.Username)
+		return nil, status.Errorf(
+			codes.PermissionDenied,
+			err.Error(),
+		)
 	}
 
 	return loginData, nil
