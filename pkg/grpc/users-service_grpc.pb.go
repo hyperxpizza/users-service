@@ -4,6 +4,7 @@ package grpc
 
 import (
 	context "context"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -19,6 +20,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UsersServiceClient interface {
 	GetLoginData(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginData, error)
+	InsertLoginData(ctx context.Context, in *NewLoginData, opts ...grpc.CallOption) (*ID, error)
+	DeleteLoginData(ctx context.Context, in *ID, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
 type usersServiceClient struct {
@@ -38,11 +41,31 @@ func (c *usersServiceClient) GetLoginData(ctx context.Context, in *LoginRequest,
 	return out, nil
 }
 
+func (c *usersServiceClient) InsertLoginData(ctx context.Context, in *NewLoginData, opts ...grpc.CallOption) (*ID, error) {
+	out := new(ID)
+	err := c.cc.Invoke(ctx, "/UsersService/InsertLoginData", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *usersServiceClient) DeleteLoginData(ctx context.Context, in *ID, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/UsersService/DeleteLoginData", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UsersServiceServer is the server API for UsersService service.
 // All implementations must embed UnimplementedUsersServiceServer
 // for forward compatibility
 type UsersServiceServer interface {
 	GetLoginData(context.Context, *LoginRequest) (*LoginData, error)
+	InsertLoginData(context.Context, *NewLoginData) (*ID, error)
+	DeleteLoginData(context.Context, *ID) (*empty.Empty, error)
 	mustEmbedUnimplementedUsersServiceServer()
 }
 
@@ -52,6 +75,12 @@ type UnimplementedUsersServiceServer struct {
 
 func (UnimplementedUsersServiceServer) GetLoginData(context.Context, *LoginRequest) (*LoginData, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLoginData not implemented")
+}
+func (UnimplementedUsersServiceServer) InsertLoginData(context.Context, *NewLoginData) (*ID, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InsertLoginData not implemented")
+}
+func (UnimplementedUsersServiceServer) DeleteLoginData(context.Context, *ID) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteLoginData not implemented")
 }
 func (UnimplementedUsersServiceServer) mustEmbedUnimplementedUsersServiceServer() {}
 
@@ -84,6 +113,42 @@ func _UsersService_GetLoginData_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UsersService_InsertLoginData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NewLoginData)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServiceServer).InsertLoginData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/UsersService/InsertLoginData",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServiceServer).InsertLoginData(ctx, req.(*NewLoginData))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UsersService_DeleteLoginData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServiceServer).DeleteLoginData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/UsersService/DeleteLoginData",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServiceServer).DeleteLoginData(ctx, req.(*ID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UsersService_ServiceDesc is the grpc.ServiceDesc for UsersService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -94,6 +159,14 @@ var UsersService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetLoginData",
 			Handler:    _UsersService_GetLoginData_Handler,
+		},
+		{
+			MethodName: "InsertLoginData",
+			Handler:    _UsersService_InsertLoginData_Handler,
+		},
+		{
+			MethodName: "DeleteLoginData",
+			Handler:    _UsersService_DeleteLoginData_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
