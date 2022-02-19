@@ -11,10 +11,12 @@ import (
 	"github.com/hyperxpizza/users-service/pkg/database"
 	pb "github.com/hyperxpizza/users-service/pkg/grpc"
 	"github.com/hyperxpizza/users-service/pkg/utils"
+	"github.com/hyperxpizza/users-service/pkg/validator"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type UsersServiceServer struct {
@@ -90,4 +92,23 @@ func (s *UsersServiceServer) GetLoginData(ctx context.Context, req *pb.LoginRequ
 	}
 
 	return loginData, nil
+}
+
+func (s *UsersServiceServer) InsertLoginData(ctx context.Context, req *pb.NewLoginData) (*pb.ID, error) {
+	var id pb.ID
+
+	//validate input data
+	err := validator.ValidateLoginData(req.Username, req.Email, req.Password1, req.Password2)
+	if err != nil {
+		return nil, status.Error(
+			codes.InvalidArgument,
+			err.Error(),
+		)
+	}
+
+	return &id, nil
+}
+
+func (s *UsersServiceServer) DeleteLoginData(ctx context.Context, req *pb.ID) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
 }

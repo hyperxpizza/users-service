@@ -31,7 +31,27 @@ func Connect(cfg *config.Config) (*Database, error) {
 	return &Database{database}, nil
 }
 
-func (db *Database) InsertLogin() {}
+func (db *Database) InsertUser() {}
+
+func (db *Database) InsertLoginData(data *pb.NewLoginData, passwordHash string, userID int64) (int64, error) {
+	var id int64
+
+	stmt, err := db.Prepare(`
+	insert into logins(id, username, email, passwordHash, created, updated, userid)
+	values(default, $1, $2, $3, $4, $5, $6)
+	returning id
+	`)
+	if err != nil {
+		return 0, err
+	}
+
+	err = stmt.QueryRow(data.Username, data.Email, passwordHash, time.Now(), time.Now(), userID).Scan(&id)
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
 
 func (db *Database) GetLoginData(username string) (*pb.LoginData, error) {
 	var data pb.LoginData
