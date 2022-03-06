@@ -94,8 +94,8 @@ func (s *UsersServiceServer) GetLoginData(ctx context.Context, req *pb.LoginRequ
 	return loginData, nil
 }
 
-func (s *UsersServiceServer) InsertLoginData(ctx context.Context, req *pb.NewLoginData) (*pb.ID, error) {
-	var id pb.ID
+func (s *UsersServiceServer) InsertLoginData(ctx context.Context, req *pb.NewLoginData) (*pb.UsersServiceID, error) {
+	var id pb.UsersServiceID
 
 	//validate input data
 	err := validator.ValidateLoginData(req.Username, req.Email, req.Password1, req.Password2)
@@ -109,6 +109,6 @@ func (s *UsersServiceServer) InsertLoginData(ctx context.Context, req *pb.NewLog
 	return &id, nil
 }
 
-func (s *UsersServiceServer) DeleteLoginData(ctx context.Context, req *pb.ID) (*emptypb.Empty, error) {
+func (s *UsersServiceServer) DeleteLoginData(ctx context.Context, req *pb.UsersServiceID) (*emptypb.Empty, error) {
 	return &emptypb.Empty{}, nil
 }

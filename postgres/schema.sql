@@ -2,7 +2,9 @@ drop table if exists users;
 drop table if exists logins;
 
 create table users (
-    id serial primary key
+    id serial primary key,
+    firstName varchar(200),
+    lastName varchar(200)
 );
 
 create table logins (

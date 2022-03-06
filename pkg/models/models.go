@@ -12,3 +12,11 @@ type LoginData struct {
 	Updated      *timestamp.Timestamp `json:"updated"`
 	UserID       int64                `json:"userid"`
 }
+
+type UserData struct {
+	Id int64 `json:"id"`
+}
+
+type User struct {
+	login LoginData ``
+}
