@@ -19,5 +19,3 @@ create table logins (
             references users(id)
                 on delete cascade
 );
-
-
