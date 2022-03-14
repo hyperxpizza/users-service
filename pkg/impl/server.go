@@ -121,6 +121,22 @@ func (s *UsersServiceServer) RegisterUser(ctx context.Context, req *pb.RegisterU
 		)
 	}
 
+	err = s.db.CheckIfEmailExists(req.Email)
+	if err != nil {
+		if err.Error() == database.EmailAlreadyExistsError {
+			s.logger.Errorf("email: %s already exists in the database", req.Email)
+			return nil, status.Error(
+				codes.AlreadyExists,
+				err.Error(),
+			)
+		}
+
+		return nil, status.Error(
+			codes.Internal,
+			err.Error(),
+		)
+	}
+
 	//validate input data
 	err = validator.ValidateLoginData(req.Username, req.Email, req.Password1, req.Password2)
 	if err != nil {
