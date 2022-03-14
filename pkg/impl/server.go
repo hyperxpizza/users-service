@@ -19,6 +19,11 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+const (
+	UsernameAlreadyExistsError = "username: %s already exists in the database"
+	EmailAlreadyExistsError    = "email: %s already exists in the database"
+)
+
 type UsersServiceServer struct {
 	cfg    *config.Config
 	db     *database.Database
@@ -94,17 +99,49 @@ func (s *UsersServiceServer) GetLoginData(ctx context.Context, req *pb.LoginRequ
 	return loginData, nil
 }
 
-func (s *UsersServiceServer) InsertLoginData(ctx context.Context, req *pb.NewLoginData) (*pb.UsersServiceID, error) {
+func (s *UsersServiceServer) RegisterUser(ctx context.Context, req *pb.RegisterUserRequest) (*pb.UsersServiceID, error) {
 	var id pb.UsersServiceID
 
-	//validate input data
-	err := validator.ValidateLoginData(req.Username, req.Email, req.Password1, req.Password2)
+	s.logger.Infof("inserting new user: %s", req.Username)
+
+	//check if email and username exist in the database
+	err := s.db.CheckIfUsernameExists(req.Username)
 	if err != nil {
+		if err.Error() == database.UsernameAlreadyExistsError {
+			s.logger.Errorf("username: %s already exists in the database", req.Username)
+			return nil, status.Error(
+				codes.AlreadyExists,
+				err.Error(),
+			)
+		}
+
+		return nil, status.Error(
+			codes.Internal,
+			err.Error(),
+		)
+	}
+
+	//validate input data
+	err = validator.ValidateLoginData(req.Username, req.Email, req.Password1, req.Password2)
+	if err != nil {
+		s.logger.Errorf("validating data for: %s failed: %s", req.Username, err.Error())
 		return nil, status.Error(
 			codes.InvalidArgument,
 			err.Error(),
 		)
 	}
+
+	//insert into the database
+	idInt, err := s.db.InsertUser(req)
+	if err != nil {
+		s.logger.Errorf("inserting user: %s failed: %s", req.Username, err.Error())
+		return nil, status.Error(
+			codes.Internal,
+			err.Error(),
+		)
+	}
+
+	id.Id = idInt
 
 	return &id, nil
 }

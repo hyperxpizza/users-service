@@ -6,13 +6,15 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
 message User {
-    LoginData loginData = 1;
+    UserData userData = 1;
+    LoginData loginData = 2;
 }
 
 message UserData {
     int64 id = 1;
     string firstName = 2;
     string lastName = 3;
+    string phone = 4;
 }
 
 message LoginRequest {
@@ -20,7 +22,7 @@ message LoginRequest {
     string password = 2;
 }
 
-message NewLoginData {
+message RegisterUserRequest {
     string username = 1;
     string email = 2;
     string password1 = 3;
@@ -42,7 +44,7 @@ message UsersServiceID {
 }
 
 service UsersService {
+   rpc RegisterUser(RegisterUserRequest) returns (UsersServiceID) {};
    rpc GetLoginData(LoginRequest) returns (LoginData) {};
-   rpc InsertLoginData(NewLoginData) returns (UsersServiceID) {};
-   rpc DeleteLoginData(UsersServiceID) returns (google.protobuf.Empty) {};
+   rpc DeleteUser(UsersServiceID) returns (google.protobuf.Empty) {};
 }

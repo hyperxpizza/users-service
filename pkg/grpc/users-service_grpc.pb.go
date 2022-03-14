@@ -19,9 +19,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UsersServiceClient interface {
+	RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*UsersServiceID, error)
 	GetLoginData(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginData, error)
-	InsertLoginData(ctx context.Context, in *NewLoginData, opts ...grpc.CallOption) (*UsersServiceID, error)
-	DeleteLoginData(ctx context.Context, in *UsersServiceID, opts ...grpc.CallOption) (*empty.Empty, error)
+	DeleteUser(ctx context.Context, in *UsersServiceID, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
 type usersServiceClient struct {
@@ -30,6 +30,15 @@ type usersServiceClient struct {
 
 func NewUsersServiceClient(cc grpc.ClientConnInterface) UsersServiceClient {
 	return &usersServiceClient{cc}
+}
+
+func (c *usersServiceClient) RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*UsersServiceID, error) {
+	out := new(UsersServiceID)
+	err := c.cc.Invoke(ctx, "/UsersService/RegisterUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *usersServiceClient) GetLoginData(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginData, error) {
@@ -41,18 +50,9 @@ func (c *usersServiceClient) GetLoginData(ctx context.Context, in *LoginRequest,
 	return out, nil
 }
 
-func (c *usersServiceClient) InsertLoginData(ctx context.Context, in *NewLoginData, opts ...grpc.CallOption) (*UsersServiceID, error) {
-	out := new(UsersServiceID)
-	err := c.cc.Invoke(ctx, "/UsersService/InsertLoginData", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *usersServiceClient) DeleteLoginData(ctx context.Context, in *UsersServiceID, opts ...grpc.CallOption) (*empty.Empty, error) {
+func (c *usersServiceClient) DeleteUser(ctx context.Context, in *UsersServiceID, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/UsersService/DeleteLoginData", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/UsersService/DeleteUser", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,9 +63,9 @@ func (c *usersServiceClient) DeleteLoginData(ctx context.Context, in *UsersServi
 // All implementations must embed UnimplementedUsersServiceServer
 // for forward compatibility
 type UsersServiceServer interface {
+	RegisterUser(context.Context, *RegisterUserRequest) (*UsersServiceID, error)
 	GetLoginData(context.Context, *LoginRequest) (*LoginData, error)
-	InsertLoginData(context.Context, *NewLoginData) (*UsersServiceID, error)
-	DeleteLoginData(context.Context, *UsersServiceID) (*empty.Empty, error)
+	DeleteUser(context.Context, *UsersServiceID) (*empty.Empty, error)
 	mustEmbedUnimplementedUsersServiceServer()
 }
 
@@ -73,14 +73,14 @@ type UsersServiceServer interface {
 type UnimplementedUsersServiceServer struct {
 }
 
+func (UnimplementedUsersServiceServer) RegisterUser(context.Context, *RegisterUserRequest) (*UsersServiceID, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterUser not implemented")
+}
 func (UnimplementedUsersServiceServer) GetLoginData(context.Context, *LoginRequest) (*LoginData, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLoginData not implemented")
 }
-func (UnimplementedUsersServiceServer) InsertLoginData(context.Context, *NewLoginData) (*UsersServiceID, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method InsertLoginData not implemented")
-}
-func (UnimplementedUsersServiceServer) DeleteLoginData(context.Context, *UsersServiceID) (*empty.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteLoginData not implemented")
+func (UnimplementedUsersServiceServer) DeleteUser(context.Context, *UsersServiceID) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
 }
 func (UnimplementedUsersServiceServer) mustEmbedUnimplementedUsersServiceServer() {}
 
@@ -93,6 +93,24 @@ type UnsafeUsersServiceServer interface {
 
 func RegisterUsersServiceServer(s grpc.ServiceRegistrar, srv UsersServiceServer) {
 	s.RegisterService(&UsersService_ServiceDesc, srv)
+}
+
+func _UsersService_RegisterUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServiceServer).RegisterUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/UsersService/RegisterUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServiceServer).RegisterUser(ctx, req.(*RegisterUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _UsersService_GetLoginData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -113,38 +131,20 @@ func _UsersService_GetLoginData_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UsersService_InsertLoginData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NewLoginData)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UsersServiceServer).InsertLoginData(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/UsersService/InsertLoginData",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UsersServiceServer).InsertLoginData(ctx, req.(*NewLoginData))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UsersService_DeleteLoginData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _UsersService_DeleteUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UsersServiceID)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UsersServiceServer).DeleteLoginData(ctx, in)
+		return srv.(UsersServiceServer).DeleteUser(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/UsersService/DeleteLoginData",
+		FullMethod: "/UsersService/DeleteUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UsersServiceServer).DeleteLoginData(ctx, req.(*UsersServiceID))
+		return srv.(UsersServiceServer).DeleteUser(ctx, req.(*UsersServiceID))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -157,16 +157,16 @@ var UsersService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*UsersServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "RegisterUser",
+			Handler:    _UsersService_RegisterUser_Handler,
+		},
+		{
 			MethodName: "GetLoginData",
 			Handler:    _UsersService_GetLoginData_Handler,
 		},
 		{
-			MethodName: "InsertLoginData",
-			Handler:    _UsersService_InsertLoginData_Handler,
-		},
-		{
-			MethodName: "DeleteLoginData",
-			Handler:    _UsersService_DeleteLoginData_Handler,
+			MethodName: "DeleteUser",
+			Handler:    _UsersService_DeleteUser_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
