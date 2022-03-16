@@ -114,13 +114,13 @@ func (db *Database) GetLoginData(username string) (*pb.LoginData, error) {
 	return &data, nil
 }
 
-func (db *Database) DeleteLoginData(id int64) error {
-	stmt, err := db.Prepare(`delete from users where id=$1`)
+func (db *Database) DeleteLoginData(usersID int64) error {
+	stmt, err := db.Prepare(`delete from logins where id=$1`)
 	if err != nil {
 		return err
 	}
 
-	_, err = stmt.Exec(id)
+	_, err = stmt.Exec(usersID)
 	if err != nil {
 		return err
 	}
