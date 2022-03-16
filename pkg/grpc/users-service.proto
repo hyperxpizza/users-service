@@ -47,4 +47,6 @@ service UsersService {
    rpc RegisterUser(RegisterUserRequest) returns (UsersServiceID) {};
    rpc GetLoginData(LoginRequest) returns (LoginData) {};
    rpc DeleteUser(UsersServiceID) returns (google.protobuf.Empty) {};
+
+   rpc UpdateUserData(UserData) returns (google.protobuf.Empty) {};
 }
