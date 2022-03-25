@@ -34,18 +34,14 @@ func TestDatabaseOperations(t *testing.T) {
 
 	defer db.Close()
 
-	id, err := db.InsertUser(getLoginData())
-	assert.NoError(t, err)
-
-	if *deleteOpt {
-		err := db.DeleteLoginData(id)
+	t.Run("Insert LoginData", func(t *testing.T) {
+		id, err := db.InsertUser(getLoginData())
 		assert.NoError(t, err)
-	}
 
-	/*
-		t.Run("Insert LoginData", func(t *testing.T) {
+		if *deleteOpt {
+			err := db.DeleteLoginData(id)
+			assert.NoError(t, err)
+		}
+	})
 
-
-		})
-	*/
 }

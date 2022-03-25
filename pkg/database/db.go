@@ -62,6 +62,7 @@ func (db *Database) InsertUser(data *pb.RegisterUserRequest) (int64, error) {
 		tx.Rollback()
 		return 0, err
 	}
+	defer stmt.Close()
 
 	var lID int
 	err = stmt.QueryRow(data.Username, data.Email, passwordHash, time.Now(), time.Now()).Scan(&lID)
@@ -75,6 +76,7 @@ func (db *Database) InsertUser(data *pb.RegisterUserRequest) (int64, error) {
 		tx.Rollback()
 		return 0, err
 	}
+	defer stmt2.Close()
 
 	err = stmt2.QueryRow(time.Now(), time.Now(), lID).Scan(&id)
 	if err != nil {
@@ -153,4 +155,9 @@ func (db *Database) CheckIfEmailExists(email string) error {
 	}
 
 	return errors.New(EmailAlreadyExistsError)
+}
+
+func (db *Database) UpdateUserData(data *pb.UserData) error {
+	//stmt, err := db.Prepare()
+	return nil
 }

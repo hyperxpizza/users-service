@@ -15,6 +15,16 @@ message UserData {
     string firstName = 2;
     string lastName = 3;
     string phone = 4;
+    google.protobuf.Timestamp created = 5;
+    google.protobuf.Timestamp updated = 6;
+    int64 loginID = 7;
+}
+
+message UpdateUserDataRequest{
+    int64 id = 1;
+    string firstName = 2;
+    string lastName = 3;
+    string phone = 4;
 }
 
 message LoginRequest {
@@ -48,5 +58,6 @@ service UsersService {
    rpc GetLoginData(LoginRequest) returns (LoginData) {};
    rpc DeleteUser(UsersServiceID) returns (google.protobuf.Empty) {};
 
-   rpc UpdateUserData(UserData) returns (google.protobuf.Empty) {};
+   rpc GetUserData(UsersServiceID) returns (UserData) {};
+   rpc UpdateUserData(UpdateUserDataRequest) returns (google.protobuf.Empty) {};
 }

@@ -165,3 +165,12 @@ func (s *UsersServiceServer) RegisterUser(ctx context.Context, req *pb.RegisterU
 func (s *UsersServiceServer) DeleteLoginData(ctx context.Context, req *pb.UsersServiceID) (*emptypb.Empty, error) {
 	return &emptypb.Empty{}, nil
 }
+
+func (s *UsersServiceServer) GetUserData(ctx context.Context, req *pb.UsersServiceID) (*pb.UserData, error) {
+	var data pb.UserData
+	return &data, nil
+}
+
+func (s *UsersServiceServer) UpdateUserData(ctx context.Context, req *pb.UpdateUserDataRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}

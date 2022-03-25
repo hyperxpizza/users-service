@@ -22,7 +22,8 @@ type UsersServiceClient interface {
 	RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*UsersServiceID, error)
 	GetLoginData(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginData, error)
 	DeleteUser(ctx context.Context, in *UsersServiceID, opts ...grpc.CallOption) (*empty.Empty, error)
-	UpdateUserData(ctx context.Context, in *UserData, opts ...grpc.CallOption) (*empty.Empty, error)
+	GetUserData(ctx context.Context, in *UsersServiceID, opts ...grpc.CallOption) (*UserData, error)
+	UpdateUserData(ctx context.Context, in *UpdateUserDataRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
 type usersServiceClient struct {
@@ -60,7 +61,16 @@ func (c *usersServiceClient) DeleteUser(ctx context.Context, in *UsersServiceID,
 	return out, nil
 }
 
-func (c *usersServiceClient) UpdateUserData(ctx context.Context, in *UserData, opts ...grpc.CallOption) (*empty.Empty, error) {
+func (c *usersServiceClient) GetUserData(ctx context.Context, in *UsersServiceID, opts ...grpc.CallOption) (*UserData, error) {
+	out := new(UserData)
+	err := c.cc.Invoke(ctx, "/UsersService/GetUserData", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *usersServiceClient) UpdateUserData(ctx context.Context, in *UpdateUserDataRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/UsersService/UpdateUserData", in, out, opts...)
 	if err != nil {
@@ -76,7 +86,8 @@ type UsersServiceServer interface {
 	RegisterUser(context.Context, *RegisterUserRequest) (*UsersServiceID, error)
 	GetLoginData(context.Context, *LoginRequest) (*LoginData, error)
 	DeleteUser(context.Context, *UsersServiceID) (*empty.Empty, error)
-	UpdateUserData(context.Context, *UserData) (*empty.Empty, error)
+	GetUserData(context.Context, *UsersServiceID) (*UserData, error)
+	UpdateUserData(context.Context, *UpdateUserDataRequest) (*empty.Empty, error)
 	mustEmbedUnimplementedUsersServiceServer()
 }
 
@@ -93,7 +104,10 @@ func (UnimplementedUsersServiceServer) GetLoginData(context.Context, *LoginReque
 func (UnimplementedUsersServiceServer) DeleteUser(context.Context, *UsersServiceID) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
 }
-func (UnimplementedUsersServiceServer) UpdateUserData(context.Context, *UserData) (*empty.Empty, error) {
+func (UnimplementedUsersServiceServer) GetUserData(context.Context, *UsersServiceID) (*UserData, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserData not implemented")
+}
+func (UnimplementedUsersServiceServer) UpdateUserData(context.Context, *UpdateUserDataRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserData not implemented")
 }
 func (UnimplementedUsersServiceServer) mustEmbedUnimplementedUsersServiceServer() {}
@@ -163,8 +177,26 @@ func _UsersService_DeleteUser_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UsersService_GetUserData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UsersServiceID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServiceServer).GetUserData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/UsersService/GetUserData",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServiceServer).GetUserData(ctx, req.(*UsersServiceID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _UsersService_UpdateUserData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserData)
+	in := new(UpdateUserDataRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -176,7 +208,7 @@ func _UsersService_UpdateUserData_Handler(srv interface{}, ctx context.Context, 
 		FullMethod: "/UsersService/UpdateUserData",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UsersServiceServer).UpdateUserData(ctx, req.(*UserData))
+		return srv.(UsersServiceServer).UpdateUserData(ctx, req.(*UpdateUserDataRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -199,6 +231,10 @@ var UsersService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteUser",
 			Handler:    _UsersService_DeleteUser_Handler,
+		},
+		{
+			MethodName: "GetUserData",
+			Handler:    _UsersService_GetUserData_Handler,
 		},
 		{
 			MethodName: "UpdateUserData",
